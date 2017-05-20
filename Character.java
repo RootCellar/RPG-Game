@@ -35,6 +35,22 @@ public class Character
         calcDef();
         calcMAtk();
         calcHp();
+        calcMana();
+    }
+    
+    public void calcMana() {
+        if(type.equals("Regular")) {
+            mHp=(int) (30*Math.pow(1.1,level));
+        }
+        if(type.equals("Warrior")) {
+            mHp=(int) (5*Math.pow(1.1,level));
+        }
+        if(type.equals("Guardian")) {
+            mHp=(int) (5*Math.pow(1.1,level));
+        }
+        if(type.equals("Titan")) {
+            mHp=(int) (400*Math.pow(1.1,level));
+        }
     }
 
     public void calcHp() {
