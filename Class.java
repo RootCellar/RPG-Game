@@ -15,6 +15,15 @@ public class Class
         bmatk=matk;
     }
     
+    public String toString() {
+        return "Name: "+name+"\n"+
+               "Base HP: "+bhp+"\n"+
+               "Base Mana: "+bmana+"\n"+
+               "Base Attack: "+batk+"\n"+
+               "Base Defense: "+bdef+"\n"+
+               "Base Magic Attack: "+bmatk+"\n";
+    }
+    
     public String getName() {
         return name;
     }
