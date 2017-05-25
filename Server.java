@@ -53,7 +53,7 @@ public class Server implements Runnable
         makeClasses();
 
         checker w = new checker();
-        Thread w2 = new Thread(w); //This thread reloads guns and keeps players in map bounds
+        Thread w2 = new Thread(w); //This thread checks things
         w2.start();
 
         Thread c2=null;
