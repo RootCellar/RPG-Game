@@ -22,7 +22,17 @@ public class Character
         type=c;
         mult=m;
         race=r;
-        setRegenRate(0.001);
+        setRegenRate(0.01);
+        calcStats();
+    }
+    
+    public int getLevel() {
+        calcStats();
+        return level;
+    }
+
+    public int getXP() {
+        return xp;
     }
 
     public boolean isInvincible() {
@@ -195,12 +205,16 @@ public class Character
     }
 
     public void calcStats() {
-        calcLevel();
-        calcAtk();
-        calcDef();
-        calcMAtk();
-        calcHp();
-        calcMana();
+        try{
+            calcLevel();
+            calcAtk();
+            calcDef();
+            calcMAtk();
+            calcHp();
+            calcMana();
+        }catch(Exception e) {
+
+        }
     }
 
     public void calcMana() {
