@@ -1,7 +1,4 @@
 import java.util.ArrayList;
-/**
- * This thread is used to reload tank guns and make sure that players don't leave the area boundaries
- */
 public class checker implements Runnable
 {
     int mapSize=100;
