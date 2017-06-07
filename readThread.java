@@ -15,6 +15,7 @@ public class readThread implements Runnable
     boolean isLoggedIn=false;
     Character user=null;
     boolean isGoing=true;
+    boolean isDone=false;
     int gold=0;
     public void run() {
         DataInputStream in=null;
@@ -30,6 +31,18 @@ public class readThread implements Runnable
             in = new DataInputStream(readFrom.getInputStream());
         }catch(Exception e) {
 
+        }
+
+        if(Server.isHalted()) {
+            Server.sendTo("Sorry, server is halted. Commands are blocked.",readFrom);
+            while(Server.isHalted()) {
+                try{
+                    Thread.sleep(100);
+                }catch(Exception e) {
+
+                }
+            }
+            Server.sendTo("Server is no longer halted",readFrom);
         }
 
         while(isGoing) {
@@ -87,6 +100,12 @@ public class readThread implements Runnable
                     }
                 }
                 in2=in.readUTF();
+                if(Server.isHalted()) {
+                    Server.sendTo("Sorry, server is halted",readFrom);
+                    in2="";
+                }
+                Server.getListener().command(in2,this);
+                user.calcStats();
                 if(in2.equals("/help")) {
                     Server.sendTo("/mychar - gives info about your character",readFrom);
                 }
@@ -97,8 +116,6 @@ public class readThread implements Runnable
                     Server.send(readFrom,in2,name);
                 }
                 Server.save(this,name,pass);
-                user.calcStats();
-                Server.getListener().command(in2,this);
             }catch(IOException e) { //Connection closed, player is quitting
                 //System.out.println(readFrom.getRemoteSocketAddress()+ " ("+name+") Disconnected");
                 Server.send(readFrom.getRemoteSocketAddress()+"("+name+") Disconnected");
@@ -109,12 +126,21 @@ public class readThread implements Runnable
                 }catch(IOException f) {
 
                 }
-                break;
+                name="DISCONNECTED";
             }catch(Exception e) {
                 //Server.send("Server error");
                 //e.printStackTrace();
             }
         }
+        isDone=true;
+    }
+
+    public boolean isDone() {
+        return isDone;
+    }
+
+    public void stopGoing() {
+        isGoing=false;
     }
 
     public int getGold() {

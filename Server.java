@@ -2,7 +2,6 @@ import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
-
 /**
  * Use "Server.methodname()" to access these methods
  * 
@@ -19,6 +18,8 @@ public class Server implements Runnable
     static int mapSize=100;
     static boolean isServer=true;
     static int port=0;
+    static FileWriter toLogs;
+    static boolean isHalted=false;
     public static void main(String args[]) {
         Server s = new Server();
         Thread t = new Thread(s);
@@ -48,12 +49,13 @@ public class Server implements Runnable
         new File("Classes").mkdir();
         new File("Players").mkdir(); //Makes sure that folders are set up
         new File("Mail").mkdir();
-
+        new File("Logs").mkdir();
+        
         makeRaces();
         makeClasses();
 
         checker w = new checker();
-        Thread w2 = new Thread(w); //This thread checks things
+        Thread w2 = new Thread(w); //This thread reloads guns and keeps players in map bounds
         w2.start();
 
         Thread c2=null;
@@ -99,9 +101,12 @@ public class Server implements Runnable
                 try{
                     //Remove players that are no longer connected
                     for(int i=0; i<r.size(); i++) {
-                        if(r.get(i).isGoing()==false) {
+                        if(r.get(i).isDone()==true) {
                             deleteThread(i);
                             //System.out.println("DEBUG: Removed "+i);
+                        }
+                        if(r.get(i).isGoing()==false) {
+                            r2.get(i).interrupt();
                         }
                     }
                     client = null;
@@ -116,19 +121,19 @@ public class Server implements Runnable
                         send(client.getRemoteSocketAddress()+" connected.");
                         t=new readThread();
                         t2=new Thread(t);
-                        t2.start();
                         t.setSocket(client);
                         if(r.size()<50) {
                             r.add(t);
                             r2.add(t2);
                             t.setNumber(r.size()-1);
+                            t2.start();
                         }
                         else { //If there are too many players, close connection
                             sendTo("Sorry, too many players!",client);
                             sendTo("You will now be kicked.",client);
                             send(client.getRemoteSocketAddress()+" disconnected (too many players)");
-                            t2.stop();
                             client.close();
+                            t.stopGoing();
                         }
                     }
                 }catch(SocketTimeoutException s) {
@@ -218,6 +223,10 @@ public class Server implements Runnable
                         System.out.println(ticks2);
                         in="";
                     }
+                    else if(in.equals("/halt")) {
+                        halt(!isHalted);
+                        in="";
+                    }
                     else if(in.length()>1 && in.substring(0,1).equals("/")) {
                         System.out.println("Invalid command. Use /help to get command list");
                         in="";
@@ -262,10 +271,24 @@ public class Server implements Runnable
         return;
     }
     
+    public static void halt(boolean b) {
+        isHalted=b;
+        if(b) {
+            System.out.println("Server activity halted");
+        }
+        else {
+            System.out.println("Server activity not halted");
+        }
+    }
+    
+    public static boolean isHalted() {
+        return isHalted;
+    }
+
     public static ArrayList<Race> getRaces() {
         return races;
     }
-    
+
     public static ArrayList<Class> getClasses() {
         return classes;
     }
@@ -390,14 +413,11 @@ public class Server implements Runnable
      */
     public static void kick(int i) {
         try{
-            r2.get(i).stop();
             r.get(i).getSocket().close();
-        }catch(IOException e) {
-
-        }catch(IndexOutOfBoundsException e) {
+            r.get(i).stopGoing();
+        }catch(Exception e) {
 
         }
-        deleteThread(i);
         System.out.println("Kicked ("+i+") "+r.get(i).getName());
     }
 
@@ -568,7 +588,7 @@ public class Server implements Runnable
             return;
         }
     }
-    
+
     public static void savef(readThread user, String name, String pass) {
         try{
             FileWriter outf = new FileWriter(new File("Players/"+name+".txt"));
@@ -611,7 +631,7 @@ public class Server implements Runnable
                     try{
                         xp=Integer.parseInt(inf.next());
                     }catch(Exception e) {
-                        
+
                     }
                 }
                 if(in.equals("Gold:")) {
