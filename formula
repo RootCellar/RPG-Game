@@ -1,0 +1,27 @@
+	/**
+ 	* Calculates the damage done
+ 	* @param damage attack stat of the attacker
+ 	* @param armor defense stat of the person being attacked
+ 	* @return The damage done as a double
+ 	* This damage system relies on the relation of the attack power to the defense of the person being attacked.
+ 	* If the attack power is half of the defense, the damage is halved.
+ 	* If the attack power is one tenth of the defense, the attack is blocked, and does 0 damage.
+ 	*/
+	public static double CalcDamage(int damage, int armor) {
+    	double a=damage; //A is the damage, b is the armor of the person being attacked
+    	double b=armor;
+    	double c=a/b; //Finds the multiplier
+    	double finalDamage;
+    	if(a>b) { //Reduces damage multiplier if the attack is greater than the defense
+        	c=c-1;
+        	c=c/3.0;
+        	c=c+1;
+    	}
+    	if(c<=0.1) { //if the attack does very low damage, it does 0
+        	return 0;
+    	}
+    	else {
+        	finalDamage=a*c; //Uses the multiplier to calculate and return the damage done
+        	return finalDamage;
+    	}
+	}
